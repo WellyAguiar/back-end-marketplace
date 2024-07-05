@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 const router = express.Router();
 const prisma = new PrismaClient();
+console.log(process.env.GOOGLE_CLOUD_SERVICE_ACCOUNT_KEY);
 
 // Verificar se a variável de ambiente está definida
 if (!process.env.GOOGLE_CLOUD_SERVICE_ACCOUNT_KEY) {
