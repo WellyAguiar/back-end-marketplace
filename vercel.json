@@ -2,12 +2,15 @@
   "version": 2,
   "builds": [
     {
-      "src": "src/app.js",
-      "use": "@vercel/node",
+      "src": "vercel-build.sh",
+      "use": "@vercel/static-build",
       "config": {
-        "installCommand": "npm install",
-        "buildCommand": "npm run build"
+        "distDir": "public"
       }
+    },
+    {
+      "src": "src/app.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
