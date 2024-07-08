@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "build": "npx prisma generate"
+    "build": "npx prisma generate",
+    "start:prod": "npx prisma generate && node src/app.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.14.0",
