@@ -6,8 +6,9 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "build": "npx prisma generate",
-    "vercel-start": "npm run build && npm start"
+    "build": "prisma generate && start",
+    "vercel-start": "npm run build && npm start",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@google/generative-ai": "^0.14.0",
