@@ -5,9 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "node src/app.js",
-    "build": "npx prisma generate && node src/app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon src/app.js",
+    "build": "npx prisma generate"
   },
   "dependencies": {
     "@google/generative-ai": "^0.14.0",

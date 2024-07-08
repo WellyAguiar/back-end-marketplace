@@ -12,15 +12,16 @@ dotenv.config();
 
 const app = express();
 
+// Inicializando o Prisma Client
 const prisma = new PrismaClient();
 
 app.use((req, res, next) => {
-    if (req.path.includes('/src/products/create')) {
-      return next(); // Pula o express.json() para esta rota
-    }
-    return express.json()(req, res, next);
-  });
-  
+  if (req.path.includes('/src/products/create')) {
+    return next(); // Pula o express.json() para esta rota
+  }
+  return express.json()(req, res, next);
+});
+
 // Configuração de CORS
 const allowedOrigins = [
   process.env.FRONTEND_URL,
@@ -30,7 +31,6 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Permitir requisições sem origem (ex.: cURL, Postman)
     if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) === -1) {
       const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
@@ -40,10 +40,10 @@ app.use(cors({
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true, // Adicione isso se precisar enviar cookies ou autenticação de sessão
+  credentials: true,
 }));
 
-app.use(express.json()); // Usando express.json() ao invés de bodyParser.json()
+app.use(express.json());
 
 app.use('/src/products', createRoutes);
 app.use('/src/products', productRoutes);
@@ -51,7 +51,6 @@ app.use('/src/auth', authRoutes);
 app.use('/src/api', geminiRoutes);
 app.use('/src', stripeRoutes);
 
-/eai/
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
