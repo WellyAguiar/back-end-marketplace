@@ -48,6 +48,7 @@ app.use('/src/auth', authRoutes);
 app.use('/src/api', geminiRoutes);
 app.use('/src', stripeRoutes);
 
+/eai/
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
