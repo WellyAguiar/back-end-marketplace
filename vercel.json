@@ -1,21 +1,15 @@
 {
     "version": 2,
-    "build": {
-      "env": {
-        "DATABASE_URL": "@database_url"
+"builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/node",
+      "config": {
+        "installCommand": "npm install",
+        "buildCommand": "npm run build"
       }
-    },
-    "builds": [
-      {
-        "src": "package.json",
-        "use": "@vercel/node",
-        "config": {
-          "installCommand": "npm install",
-          "buildCommand": "npm run build"
-        }
-      }
-    ],
-    
+    }
+  ],
     "routes": [
       {
         "src": "/(.*)",
@@ -23,5 +17,4 @@
       }
     ]
   }
-  
   
