@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { PrismaClient } from '@prisma/client';
 import productRoutes from './products/index.js';
 import authRoutes from './auth/register.js';
 import geminiRoutes from './api/gemini.js';
@@ -10,6 +11,8 @@ import createRoutes from './products/create.js';
 dotenv.config();
 
 const app = express();
+
+const prisma = new PrismaClient();
 
 app.use((req, res, next) => {
     if (req.path.includes('/src/products/create')) {
@@ -53,4 +56,7 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
