@@ -1,3 +1,3 @@
 #!/bin/bash
 npx prisma generate
-npm run start
+npm run vercel-start
