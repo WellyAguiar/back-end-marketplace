@@ -18,14 +18,16 @@ app.use((req, res, next) => {
     return express.json()(req, res, next);
   });
   
+// Configuração de CORS
 app.use(cors({
   origin: [
-    process.env.FRONTEND_URL,
+    process.env.FRONTEND_URL, // Certifique-se de que esta variável está configurada corretamente
     'https://front-end-marketplace-henna.vercel.app',
     'http://localhost:3001',
   ],
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true, // Adicione isso se precisar enviar cookies ou autenticação de sessão
 }));
 
 app.use(express.json()); // Usando express.json() ao invés de bodyParser.json()
