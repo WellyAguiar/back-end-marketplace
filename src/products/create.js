@@ -2,31 +2,33 @@ import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import formidable from 'formidable';
 import admin from 'firebase-admin';
-import dotenv from 'dotenv';
+import { readFile } from 'fs/promises';
+import path from 'path';
+import fs from 'fs';
 
-dotenv.config();
+
 const router = express.Router();
 const prisma = new PrismaClient();
-console.log(process.env.GOOGLE_CLOUD_SERVICE_ACCOUNT_KEY);
 
-// Verificar se a variável de ambiente está definida
-if (!process.env.GOOGLE_CLOUD_SERVICE_ACCOUNT_KEY) {
-  console.error('GOOGLE_CLOUD_SERVICE_ACCOUNT_KEY não está definida.');
-  process.exit(1); // Encerra o processo com erro
+async function initializeFirebase() {
+  try {
+    const filePath = path.join(process.cwd(), '/storage-marketplace-firebase-adminsdk-lvp65-262d49efa5.json'); // Ajuste o caminho conforme necessário
+    const serviceAccount = JSON.parse(await readFile(filePath, 'utf8'));
+
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      storageBucket: 'gs://storage-marketplace.appspot.com',
+    });
+
+    console.log('Firebase initialized successfully');
+  } catch (error) {
+    console.error('Erro ao inicializar o Firebase:', error);
+    process.exit(1);
+  }
 }
 
-let serviceAccount;
-try {
-  serviceAccount = JSON.parse(process.env.GOOGLE_CLOUD_SERVICE_ACCOUNT_KEY);
-} catch (error) {
-  console.error('Erro ao analisar GOOGLE_CLOUD_SERVICE_ACCOUNT_KEY:', error);
-  process.exit(1); // Encerra o processo com erro
-}
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  storageBucket: 'gs://storage-marketplace.appspot.com',
-});
+// Aguarde a inicialização do Firebase antes de continuar
+await initializeFirebase();
 
 const bucket = admin.storage().bucket();
 
