@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "build": "prisma generate && start",
+    "build": "prisma generate && npm start",
     "vercel-start": "npm run build && npm start",
     "postinstall": "prisma generate"
   },
