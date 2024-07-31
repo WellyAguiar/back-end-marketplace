@@ -3,10 +3,11 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import productRoutes from './products/index.js';
-import authRoutes from './auth/register.js';
+import authRoutes from './auth/auth.js';
 import geminiRoutes from './api/gemini.js';
 import stripeRoutes from './create-checkout-session.js';
 import createRoutes from './products/create.js';
+import incrementStockRoutes from './products/increment-stock.js';
 
 dotenv.config();
 
@@ -47,6 +48,7 @@ app.use(express.json());
 
 app.use('/src/products', createRoutes);
 app.use('/src/products', productRoutes);
+app.use('/src/products', incrementStockRoutes);
 app.use('/src/auth', authRoutes);
 app.use('/src/api', geminiRoutes);
 app.use('/src', stripeRoutes);

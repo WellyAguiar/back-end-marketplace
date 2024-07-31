@@ -5,8 +5,11 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const app = express();
 const router = express.Router();
 const prisma = new PrismaClient();
+
+router.use(express.json());
 
 // Função para testar a conexão com o banco de dados
 async function testDatabaseConnection() {
@@ -25,11 +28,13 @@ testDatabaseConnection();
 router.get('/', async (req, res) => {
   const { id, categories } = req.query;
 
+  console.log('Received query params:', req.query);
+
   if (id) {
     try {
       const product = await prisma.product.findUnique({
         where: { id: parseInt(id, 10) },
-        include: { quantities: true },
+        include: { quantities: true, sizes: true, colors: true },
       });
 
       if (!product) {
@@ -48,7 +53,9 @@ router.get('/', async (req, res) => {
         where: {
           category: { in: categoriesArray },
         },
-        include: { quantities: true },
+        include: { quantities: true, sizes: true, colors: true },
+        orderBy: {
+          createdAt: 'desc',}
       });
       res.json(products);
     } catch (error) {
@@ -59,7 +66,6 @@ router.get('/', async (req, res) => {
     res.status(400).json({ error: 'Missing required query parameters' });
   }
 });
-
 
 // Rota para criar produto
 router.post('/create', async (req, res) => {
@@ -76,8 +82,19 @@ router.post('/create', async (req, res) => {
         description,
         price: parseFloat(price),
         category,
-        size,
-        color,
+        imageUrl: '', // Placeholder, will be updated after image upload
+        sizes: {
+          connectOrCreate: {
+            where: { name: size },
+            create: { name: size }
+          }
+        },
+        colors: {
+          connectOrCreate: {
+            where: { name: color },
+            create: { name: color }
+          }
+        }
       },
     });
 
@@ -106,5 +123,28 @@ router.post('/create', async (req, res) => {
     res.status(500).json({ error: 'Failed to create product' });
   }
 });
+
+
+// Rota para buscar um produto específico
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id: parseInt(id, 10) },
+      include: { quantities: true, sizes: true, colors: true },
+    });
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    res.json(product);
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 export default router;

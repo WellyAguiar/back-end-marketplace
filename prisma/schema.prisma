@@ -8,28 +8,40 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  products  Product[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  name           String?
+  passwordHash   String
+  orders         Order[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 model Product {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String
-  price       Float
-  category    String
-  size        String
-  color       String
-  imageUrl    String
-  userId      Int?
-  user        User?    @relation(fields: [userId], references: [id])    
-  quantities  Quantity[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             Int            @id @default(autoincrement())
+  name           String
+  description    String
+  price          Float
+  category       String
+  imageUrl       String
+  quantities     Quantity[]
+  sizes          Size[]         @relation("ProductSizes")
+  colors         Color[]        @relation("ProductColors")
+  orderProducts  OrderProduct[] @relation("ProductOrderProducts")
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model Size {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  products  Product[] @relation("ProductSizes")
+}
+
+model Color {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  products  Product[] @relation("ProductColors")
 }
 
 model Quantity {
@@ -38,5 +50,23 @@ model Quantity {
   color     String
   quantity  Int
   productId Int
-  product   Product  @relation(fields: [productId], references: [id])   
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+model Order {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id])
+  products  OrderProduct[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model OrderProduct {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  order     Order    @relation(fields: [orderId], references: [id])
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade, name: "ProductOrderProducts")
+  quantity  Int
 }

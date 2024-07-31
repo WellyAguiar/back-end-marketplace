@@ -6,7 +6,6 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 import fs from 'fs';
 
-
 const router = express.Router();
 const prisma = new PrismaClient();
 
@@ -53,14 +52,14 @@ router.post('/create', (req, res) => {
     const category = fields.category?.[0]?.trim();
     const size = fields.size?.[0]?.trim();
     const color = fields.color?.[0]?.trim();
-    const image = files.image?.[0]; 
-    const quantity = JSON.parse(fields.quantity?.[0] || '{}');
+    const image = files.image?.[0];
+    const quantity = parseInt(fields.quantity?.[0]?.trim(), 10);
 
     console.log('Parsed Fields:', { name, description, price, category, size, color, quantity });
     console.log('Parsed Image:', image);
 
-    if (!name || !description || !price || !category || !size || !color || !image) {
-      console.error('Missing required fields:', { name, description, price, category, size, color, image });
+    if (!name || !description || !price || !category || !size || !color || !image || isNaN(quantity)) {
+      console.error('Missing required fields:', { name, description, price, category, size, color, image, quantity });
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -98,28 +97,31 @@ router.post('/create', (req, res) => {
               description,
               price,
               category,
-              size,
-              color,
               imageUrl: url,
+              sizes: {
+                connectOrCreate: {
+                  where: { name: size },
+                  create: { name: size }
+                }
+              },
+              colors: {
+                connectOrCreate: {
+                  where: { name: color },
+                  create: { name: color }
+                }
+              }
             },
           });
           console.log('Product created:', product);
 
-          const quantities = JSON.parse(fields.quantity?.[0] || '{}');
-          console.log('Parsed Quantities:', quantities);
-
-          for (const [key, value] of Object.entries(quantities)) {
-            const [size, color] = key.split('-');
-            const quantity = await prisma.quantity.create({
-              data: {
-                size: size.trim(),
-                color: color.trim(),
-                quantity: parseInt(value, 10),
-                productId: product.id,
-              },
-            });
-            console.log('Quantity created:', quantity);
-          }
+          await prisma.quantity.create({
+            data: {
+              size: size,
+              color: color,
+              quantity: quantity,
+              productId: product.id,
+            },
+          });
 
           res.status(201).json(product);
         } catch (error) {
