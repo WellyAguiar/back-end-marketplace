@@ -12,27 +12,44 @@ router.post('/increment-stock', async (req, res) => {
   }
 
   try {
-    const existingQuantity = await prisma.quantity.findFirst({
+    // Encontra ou cria o tamanho
+    const sizeData = await prisma.size.upsert({
+      where: { name: size },
+      update: {},
+      create: { name: size }
+    });
+
+    // Encontra ou cria a cor
+    const colorData = await prisma.color.upsert({
+      where: { name: color },
+      update: {},
+      create: { name: color }
+    });
+
+    // Encontra a variante do produto
+    const existingVariant = await prisma.productVariant.findFirst({
       where: {
         productId: parseInt(productId, 10),
-        size,
-        color
+        sizeId: sizeData.id,
+        colorId: colorData.id,
       }
     });
 
-    if (existingQuantity) {
-      await prisma.quantity.update({
-        where: { id: existingQuantity.id },
+    if (existingVariant) {
+      // Incrementa a quantidade se a variante já existir
+      await prisma.productVariant.update({
+        where: { id: existingVariant.id },
         data: {
-          quantity: existingQuantity.quantity + parseInt(quantity, 10)
+          quantity: existingVariant.quantity + parseInt(quantity, 10)
         }
       });
     } else {
-      await prisma.quantity.create({
+      // Cria uma nova variante se ela não existir
+      await prisma.productVariant.create({
         data: {
           productId: parseInt(productId, 10),
-          size,
-          color,
+          sizeId: sizeData.id,
+          colorId: colorData.id,
           quantity: parseInt(quantity, 10)
         }
       });

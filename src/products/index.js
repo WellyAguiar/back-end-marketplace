@@ -11,7 +11,6 @@ const prisma = new PrismaClient();
 
 router.use(express.json());
 
-// Função para testar a conexão com o banco de dados
 async function testDatabaseConnection() {
   try {
     console.log('Testing database connection...');
@@ -24,7 +23,6 @@ async function testDatabaseConnection() {
 
 testDatabaseConnection();
 
-// Rota para buscar produtos
 router.get('/', async (req, res) => {
   const { id, categories } = req.query;
 
@@ -34,7 +32,7 @@ router.get('/', async (req, res) => {
     try {
       const product = await prisma.product.findUnique({
         where: { id: parseInt(id, 10) },
-        include: { quantities: true, sizes: true, colors: true },
+        include: { productVariants: { include: { size: true, color: true } } },
       });
 
       if (!product) {
@@ -53,9 +51,10 @@ router.get('/', async (req, res) => {
         where: {
           category: { in: categoriesArray },
         },
-        include: { quantities: true, sizes: true, colors: true },
+        include: { productVariants: { include: { size: true, color: true } } },
         orderBy: {
-          createdAt: 'desc',}
+          createdAt: 'desc',
+        }
       });
       res.json(products);
     } catch (error) {
@@ -67,72 +66,13 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Rota para criar produto
-router.post('/create', async (req, res) => {
-  const { name, description, price, category, size, color, quantity } = req.body;
-
-  if (!name || !description || !price || !category || !size || !color) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  try {
-    const product = await prisma.product.create({
-      data: {
-        name,
-        description,
-        price: parseFloat(price),
-        category,
-        imageUrl: '', // Placeholder, will be updated after image upload
-        sizes: {
-          connectOrCreate: {
-            where: { name: size },
-            create: { name: size }
-          }
-        },
-        colors: {
-          connectOrCreate: {
-            where: { name: color },
-            create: { name: color }
-          }
-        }
-      },
-    });
-
-    if (quantity) {
-      try {
-        const quantities = JSON.parse(quantity);
-        for (const [key, value] of Object.entries(quantities)) {
-          const [size, color] = key.split('-');
-          await prisma.quantity.create({
-            data: {
-              size: size.trim(),
-              color: color.trim(),
-              quantity: parseInt(value, 10),
-              productId: product.id,
-            },
-          });
-        }
-      } catch (jsonError) {
-        return res.status(400).json({ error: 'Invalid quantity format' });
-      }
-    }
-
-    res.status(201).json(product);
-  } catch (error) {
-    console.error('Error creating product:', error);
-    res.status(500).json({ error: 'Failed to create product' });
-  }
-});
-
-
-// Rota para buscar um produto específico
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
     const product = await prisma.product.findUnique({
       where: { id: parseInt(id, 10) },
-      include: { quantities: true, sizes: true, colors: true },
+      include: { productVariants: { include: { size: true, color: true } } },
     });
 
     if (!product) {
@@ -145,6 +85,5 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
 
 export default router;

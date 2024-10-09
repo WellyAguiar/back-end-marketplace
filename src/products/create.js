@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
 
 async function initializeFirebase() {
   try {
-    const filePath = path.join(process.cwd(), '/storage-marketplace-firebase-adminsdk-lvp65-262d49efa5.json'); // Ajuste o caminho conforme necessário
+    const filePath = path.join(process.cwd(), '/storage-marketplace-firebase-adminsdk-lvp65-262d49efa5.json');
     const serviceAccount = JSON.parse(await readFile(filePath, 'utf8'));
 
     admin.initializeApp({
@@ -26,7 +26,6 @@ async function initializeFirebase() {
   }
 }
 
-// Aguarde a inicialização do Firebase antes de continuar
 await initializeFirebase();
 
 const bucket = admin.storage().bucket();
@@ -81,7 +80,6 @@ router.post('/create', (req, res) => {
       blobStream.on('finish', async () => {
         console.log('Upload finished for:', blob.name);
 
-        // Gerar URL público
         const options = {
           action: 'read',
           expires: '03-01-2500'
@@ -98,26 +96,26 @@ router.post('/create', (req, res) => {
               price,
               category,
               imageUrl: url,
-              sizes: {
-                connectOrCreate: {
-                  where: { name: size },
-                  create: { name: size }
-                }
-              },
-              colors: {
-                connectOrCreate: {
-                  where: { name: color },
-                  create: { name: color }
-                }
-              }
             },
           });
           console.log('Product created:', product);
 
-          await prisma.quantity.create({
+          const sizeData = await prisma.size.upsert({
+            where: { name: size },
+            update: {},
+            create: { name: size }
+          });
+
+          const colorData = await prisma.color.upsert({
+            where: { name: color },
+            update: {},
+            create: { name: color }
+          });
+
+          await prisma.productVariant.create({
             data: {
-              size: size,
-              color: color,
+              sizeId: sizeData.id,
+              colorId: colorData.id,
               quantity: quantity,
               productId: product.id,
             },

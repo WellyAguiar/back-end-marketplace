@@ -28,6 +28,7 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
   'https://front-end-marketplace-henna.vercel.app',
   'http://localhost:3001',
+  
 ];
 
 app.use(cors({
